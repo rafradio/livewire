@@ -2,9 +2,18 @@
 
 use Livewire\Volt\Component;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\On;
 
 new #[Layout('layouts.app')] class extends Component
 {
+    public string $product_name = '';
+    
+    #[On('product-changed')] 
+    public function updateProductName(string $value): void
+    {
+        $this->product_name = $value;
+    }
+    
     public function save(): void
     {
         $this->redirect(route('orders'), navigate: true);
@@ -19,6 +28,7 @@ new #[Layout('layouts.app')] class extends Component
                 <div class="p-6 text-gray-900 dark:text-gray-100">
                     <h2 class="text-2xl font-bold mb-6">{{ __('Сделать новый заказ') }}</h2>
                 </div>
+                <livewire:pages.orders.product-input />
                 <button 
                     type="button" 
                     wire:click="save"
@@ -26,6 +36,11 @@ new #[Layout('layouts.app')] class extends Component
                 >
                     {{ __('Сохранить и перейти к заказам') }}
                 </button>
+                <p class="mt-4 text-sm text-gray-600 dark:text-gray-400">
+                    Введено: <span class="font-semibold text-indigo-600">{{ $product_name ?: '—' }}</span>
+                </p>
+                <br />
+                <livewire:pages.orders.product-choose />
             </div>
         </div>
     </div>
