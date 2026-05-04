@@ -32,5 +32,31 @@
                 {{ $slot }}
             </main>
         </div>
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        
+        <script>
+            document.addEventListener('livewire:initialized', () => {
+
+                Livewire.on('show-notification', (data) => {
+                    console.log('📡 Событие получено!', data);
+
+                    const { type, message, timeout = 3000 } = data;
+
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire({
+                            icon: type,
+                            title: type === 'success' ? '✅ Готово!' : '❌ Ошибка',
+                            text: message,
+                            timer: type === 'success' ? timeout : null,
+                            showConfirmButton: type !== 'success',
+                            toast: type === 'success',
+                            position: type === 'success' ? 'top-end' : 'center',
+                            timerProgressBar: true
+                        });
+                    }
+                });
+
+            });
+            </script>
     </body>
 </html>

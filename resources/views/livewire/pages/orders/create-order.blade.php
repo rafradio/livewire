@@ -3,16 +3,81 @@
 use Livewire\Volt\Component;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\On;
+//use Livewire\Js;
 
 new #[Layout('layouts.app')] class extends Component
 {
     public string $product_name = '';
+    public string $notification = '';
     
     #[On('product-changed')] 
     public function updateProductName(string $value): void
     {
         $this->product_name = $value;
     }
+    
+    #[On('notify')] 
+    public function handleNotify(array $data): void
+    {
+        logger('📩 handleNotify вызван!', $data);
+        $json = json_encode($data, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP);
+        $this->js(<<<JS
+                console.log('🔥 JS выполняется! Данные:', {$json});
+                Livewire.dispatch('show-notification', {$json});
+        JS);
+        
+//        $this->js("window.dispatchEvent(new CustomEvent('show-notification', { detail: {$json} }));");
+        
+//        $type = addslashes($data['type']);
+//        $message = addslashes($data['message']);
+//        $timeout = $data['timeout'] ?? 3000;
+//
+//        $this->js(<<<JS
+//            if (typeof Swal !== 'undefined') {
+//                Swal.fire({
+//                    icon: '{$type}',
+//                    title: '{$type}' === 'success' ? '✅ Готово!' : '❌ Ошибка',
+//                    text: `{$message}`,
+//                    timer: {$timeout},
+//                    showConfirmButton: {$type} !== 'success',
+//                    toast: {$type} === 'success',
+//                    position: '{$type}' === 'success' ? 'top-end' : 'center',
+//                    timerProgressBar: true
+//                });
+//            }
+//        JS);
+    }
+    
+//    public function updatedNotification(string $value): void
+//    {
+//        logger('🔄 updatedNotification вызван!', $value);
+//        $this->js("console.log('✅ Товар создан: родительский компонент)')");
+//        if (empty($value['message'])) {
+//            return;
+//        }
+//
+//        // Экранируем для безопасной вставки в JS
+//        $data = json_decode($value, true);
+//        
+//        $type = addslashes($data['type']);
+//        $message = addslashes($data['message']);
+//        $timeout = $data['timeout'] ?? 3000;
+//        
+//        $this->js(<<<JS
+//            Swal.fire({
+//                icon: '{$type}',
+//                title: '{$type}' === 'success' ? '✅ Готово!' : '❌ Ошибка',
+//                text: `{$message}`,
+//                timer: {$timeout},
+//                showConfirmButton: {$type} !== 'success',
+//                toast: {$type} === 'success',
+//                position: {$type} === 'success' ? 'top-end' : 'center',
+//                timerProgressBar: true
+//            })
+//        JS);
+//        
+//        $this->notification = [];
+//    }
     
     public function save(): void
     {

@@ -9,6 +9,7 @@ new class extends Component
     public int $quantity = 1;
     public string $label = 'Название товара';
     public string $placeholder = 'Введите название товара';   
+    public bool $isProcessing = false;
 
     public function getValue(): string
     {
@@ -24,21 +25,36 @@ new class extends Component
     
     public function save(): void
     {
-        $validated = $this->validate([
-            'value' => 'required|string|max:255',
-            'quantity' => 'required|integer|min:1',
-        ]);
+        $this->isProcessing = true; 
+        try {
+            $validated = $this->validate([
+                'value' => 'required|string|max:255',
+                'quantity' => 'required|integer|min:1',
+            ]);
 
-        $product = Product::create([
-            'name' => $validated['value'],
-            'quantity' => $validated['quantity'],
-        ]);
+            $product = Product::create([
+                'name' => $validated['value'],
+                'quantity' => $validated['quantity'],
+            ]);
 
-        $this->dispatch('product-created', id: $product->id, name: $product->name, quantity: $product->quantity);
-
-        $this->reset(['value', 'quantity']);
-
-        $this->js("console.log('✅ Товар создан: {$product->name} ({$product->quantity} шт.)')");
+            $this->dispatch('product-created', id: $product->id, name: $product->name, quantity: $product->quantity);
+            $this->reset(['value', 'quantity']);
+            $this->js("console.log('✅ Товар создан: {$product->name} ({$product->quantity} шт.)')");
+            
+            $this->dispatch('notify', [
+                'type' => 'success',
+                'message' => "Товар \"{$product->name}\" добавлен",
+                'timeout' => 2000,
+            ]);
+        } catch (\Exception $e) {
+            $this->dispatch('notify', [
+                'type' => 'error',
+                'message' => 'Не удалось сохранить товар',
+                'timeout' => null,
+            ]);
+        } finally {
+            $this->isProcessing = false;
+        }
     }
     
 }; ?>
@@ -70,6 +86,8 @@ new class extends Component
     </div>
     <button
         type="submit"
+        wire:submit="save"
+        @disabled($isProcessing || $errors->any()) 
         wire:loading.attr="disabled"
         wire:target="save"
         class="w-full flex justify-center items-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 transition"
